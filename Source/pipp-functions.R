@@ -59,23 +59,25 @@ before.after <- function(my.sec.ILI=sec.ILI,
 ## by = by INT means by intervention and by TYPE means by flutype
 get.SARs <- function(ids=ids.1,ex.vac=FALSE,by="INT"){
   library("Hmisc")
+#  recover()
   temp0 <- hhls.in.prim.3[which(hhls.in.prim.3$Sick.Childs.ID %in% ids),]
   temp0 <- temp0[-which(temp0$Relationship.to.Sick.Child == "Sick Child (Self)") ,]
   if(ex.vac){
-    #going to exlude full households where we are missing any info on vaccination status
-    exc.ids <- unique(temp0$Sick.Childs.ID[(which(is.na(temp0$Immunization.of.Family.Member)))])
-    temp <- ddply(temp0[!temp0$Sick.Childs.ID %in% exc.ids ,],.(Sick.Childs.ID),summarise, "size"=Number.of.people.in.family[1]-1,"sick_notemp"=sum(SICK.NoTemp),"sick_temp"=sum(SICK.Temp),"int"=Intervention..y.n.[1],"type"=FluType[1])
+      ## going to exlude full households where we are missing any info on vaccination status
+      exc.ids <- unique(temp0$Sick.Childs.ID[(which(is.na(temp0$Immunization.of.Family.Member)))])
+      temp <- ddply(temp0[!temp0$Sick.Childs.ID %in% exc.ids ,],.(Sick.Childs.ID),summarise, "size"=Number.of.people.in.family[1]-1,"sick_notemp"=sum(SICK.NoTemp),"sick_temp"=sum(SICK.Temp),"int"=Intervention..y.n.[1],"type"=FluType[1])
   } else {
-    temp <- ddply(temp0,.(Sick.Childs.ID),summarise, "size"=Number.of.people.in.family[1]-1,"sick_notemp"=sum(SICK.NoTemp),"sick_temp"=sum(SICK.Temp),"int"=Intervention..y.n.[1],"type"=FluType[1])
+      temp <- ddply(temp0,.(Sick.Childs.ID),summarise, "size"=Number.of.people.in.family[1]-1,"sick_notemp"=sum(SICK.NoTemp),"sick_temp"=sum(SICK.Temp),"int"=Intervention..y.n.[1],"type"=FluType[1])
   }
   if (by=="INT"){
-    sars <- ddply(temp,.(int),summarise,"sar_notemp"=sum(sick_notemp)/sum(size),"sar_temp"=sum(sick_temp)/sum(size),"num"=sum(size),"sick_notemp"=sum(sick_notemp),"sick_temp"=sum(sick_temp))
+      sars <- ddply(temp,.(int),summarise,"sar_notemp"=sum(sick_notemp)/sum(size),"sar_temp"=sum(sick_temp)/sum(size),"num"=sum(size),"sick_notemp"=sum(sick_notemp),"sick_temp"=sum(sick_temp))
+      # note we have one missing outcome here from SEC-xxx-xx
   } else if (by == "TYPE"){
-    sars <- ddply(temp,.(type),summarise,"sar_notemp"=sum(sick_notemp)/sum(size),"sar_temp"=sum(sick_temp)/sum(size),"num"=sum(size),"sick_notemp"=sum(sick_notemp),"sick_temp"=sum(sick_temp))
-} else {
-    ##cut by int and type
-    sars <- ddply(temp,.(type,int),summarise,"sar_notemp"=sum(sick_notemp)/sum(size),"sar_temp"=sum(sick_temp)/sum(size),"num"=sum(size),"sick_notemp"=sum(sick_notemp),"sick_temp"=sum(sick_temp))
-    #stop("not using a valid 'by' type")
+      sars <- ddply(temp,.(type),summarise,"sar_notemp"=sum(sick_notemp)/sum(size),"sar_temp"=sum(sick_temp)/sum(size),"num"=sum(size),"sick_notemp"=sum(sick_notemp),"sick_temp"=sum(sick_temp))
+  } else {
+      ##cut by int and type
+      sars <- ddply(temp,.(type,int),summarise,"sar_notemp"=sum(sick_notemp)/sum(size),"sar_temp"=sum(sick_temp)/sum(size),"num"=sum(size),"sick_notemp"=sum(sick_notemp),"sick_temp"=sum(sick_temp))
+                                        #stop("not using a valid 'by' type")
   }
   ci_temp <- binconf(sars$sick_temp,sars$num,method="exact") #may to use asymptotic CIs but doesn't really make a difference
   ci_notemp <- binconf(sars$sick_notemp,sars$num,method="exact")

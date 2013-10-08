@@ -9,6 +9,8 @@
 ## Load some data files##
 #########################
 
+## note that in the public repo many of these files are unavailable
+## if you want to reproduce the results, please contact aazman@jhsph.edu and I will try to get you a dataset with non-study ids
 new.prim <- dget("Data/new_prim.rda")
 prim.3 <- dget("Data/prim_3.rda") #individual level data for each primary case
 new.prim <- dget("Data/new_prim.rda") # same as prim but suppoosedly with more reliable primary symptom data
@@ -87,6 +89,8 @@ get.SARs(ids.7,by="INT") # table S2
 
 ## get SITPs for final model used (other model fits can be generated using supplement code) assuming a family size of 4
 SITPs <- get.SITPs(n.boots=500)
+## now lets see how much they change if we estimate them when considering only households where the child is the first case
+SITPs.first.cases.only <- get.SITPs(n.boots=10,first.cases.only = T)
 
 ##################
 ## Make Table 3 ##
@@ -122,7 +126,7 @@ data.frame(tab.paper)[-1,]
 # pipp graphs
 library(RColorBrewer)
 load("Data/hhltables.rda")
-#flutabs <- make.finaloutbreak.tables()
+flutabs <- make.finaloutbreak.tables()
 
 hhl.table.A.NoTemp<-hhl.table.A.NoTemp[c(-8),c(-6,-7,-8)]
 hhl.table.B.NoTemp<-hhl.table.B.NoTemp[c(-8),c(-6,-7,-8)]
